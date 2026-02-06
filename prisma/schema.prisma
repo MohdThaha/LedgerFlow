@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  code      String   @unique
+  createdAt DateTime @default(now())
+
+  users     User[]
+}
+
+model User {
+  id             String   @id @default(uuid())
+  name           String
+  email          String   @unique
+  roleId         String?
+  organizationId String
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  role         Role?        @relation(fields: [roleId], references: [id])
+
+  @@index([organizationId])
+}
+
+
+model Role {
+  id             String       @id @default(uuid())
+  organizationId String
+  roleName       String
+  description    String?
+
+  permissions    Permission[]
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, roleName])
+  @@index([organizationId])
+}
+
+model Permission {
+  id     String @id @default(uuid())
+  roleId String
+  action String
+  note   String
+
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@index([roleId])
+}
+
+
+model Account {
+  id             String   @id @default(uuid())
+  organizationId String
+
+  accountName    String
+  accountCode    String
+  accountId      String?
+  
+  accountSubhead String
+  accountHead    String
+  accountGroup   String
+
+  description String?
+
+  debitOpeningBalance  Float?
+  creditOpeningBalance Float?
+
+  bankAccNum   String?
+  bankIfsc     String?
+  bankCurrency String?
+
+  systemAccounts Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@unique([organizationId, accountCode])
+}
+
+
+
+model SystemConfig {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
+}
