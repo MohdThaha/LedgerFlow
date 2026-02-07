@@ -13,7 +13,10 @@ model Organization {
   code      String   @unique
   createdAt DateTime @default(now())
 
-  users     User[]
+  users    User[]
+  roles    Role[]
+  accounts Account[]
+  settings OrganizationSetting[]
 }
 
 model User {
@@ -30,14 +33,14 @@ model User {
   @@index([organizationId])
 }
 
-
 model Role {
-  id             String       @id @default(uuid())
+  id             String  @id @default(uuid())
   organizationId String
   roleName       String
   description    String?
 
-  permissions    Permission[]
+  permissions Permission[]
+  users       User[]
 
   organization Organization @relation(fields: [organizationId], references: [id])
 
@@ -56,15 +59,14 @@ model Permission {
   @@index([roleId])
 }
 
-
 model Account {
-  id             String   @id @default(uuid())
+  id             String @id @default(uuid())
   organizationId String
 
-  accountName    String
-  accountCode    String
-  accountId      String?
-  
+  accountName String
+  accountCode String
+  accountId   String?
+
   accountSubhead String
   accountHead    String
   accountGroup   String
@@ -84,11 +86,21 @@ model Account {
 
   organization Organization @relation(fields: [organizationId], references: [id])
 
-  @@index([organizationId])
   @@unique([organizationId, accountCode])
+  @@index([organizationId])
 }
 
+model OrganizationSetting {
+  id             String @id @default(uuid())
+  organizationId String
+  key            String
+  value          String
 
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, key])
+  @@index([organizationId])
+}
 
 model SystemConfig {
   id    String @id @default(uuid())
